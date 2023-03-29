@@ -13,6 +13,7 @@ class AnnonceController extends AbstractController
     {
         return $this->render('annonce/index.html.twig', [
             'controller_name' => 'AnnonceController',
+            'current_menu' => 'app_annonce_index',
         ]);
     }
 }
