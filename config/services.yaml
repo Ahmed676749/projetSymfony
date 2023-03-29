@@ -22,3 +22,7 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Controller\: #Remplace les lignes que nous avions mis à la fin
+        resource: '../src/Controller/'
+        tags: [ 'controller.service_arguments' ]
