@@ -1,0 +1,12 @@
+{% extends '_layout/full-width.html.twig' %}
+
+{% block title %}Edition de l'annonce {{ annonce.id }}-{{ annonce.title }}{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1>Éditer l'annonce</h1>
+        {{ form_start(formView) }} {# cette fonction permet d'ouvrir la balise HTML form #}
+            {{ form_widget(formView) }} {# cette fonction permet d'afficher le reste du formulaire #}
+            <button class="btn btn-primary">Sauvegarder</button>
+        {{ form_end(formView) }} {# cette fonction permet de fermer la balise HTML form #}
+    </div>
+{% endblock %}
