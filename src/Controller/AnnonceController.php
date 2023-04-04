@@ -6,8 +6,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Annonce;
+use App\Form\AnnonceType;
 use Doctrine\Persistence\ManagerRegistry;
 use App\Repository\AnnonceRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
+
 
 class AnnonceController extends AbstractController
 {
@@ -80,7 +84,7 @@ class AnnonceController extends AbstractController
     }
 
     #[Route('/annonce/{id}/edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
-    public function edit(Annonce $annonce): Response
+    public function edit(Annonce $annonce, Request $request, EntityManagerInterface $em)
     {
 
         
@@ -90,9 +94,16 @@ class AnnonceController extends AbstractController
         $form = $formBuilder->getForm(); // on utilise la fonction getForm afin que le FormBuilder nous renvoie un objet de type FormInterface
         $formView = $form->createView(); // grâce à cet objet FormInterface, on peut construire la vue Twig avec createView
         $form = $this->createForm(AnnonceType::class, $annonce);
+        $form->handleRequest($request); // on dit au formulaire d'écouter la requête
+
+        if ($form->isSubmitted() && $form->isValid()) { // si le formulaire est envoyé et s'il est valide
+            $em->flush();
+            return $this->redirectToRoute('app_annonce_index');
+        }
+
         return $this->render('annonce/edit.html.twig', [
             'annonce' => $annonce,
-            'form' => $form->createView()
+            'formView' => $form->createView()
         ]);
     }
 }

@@ -43,11 +43,23 @@ class Annonce
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
+    #[ORM\Column (options: [
+        'default' => 'CURRENT_TIMESTAMP' // c'est pour mettre une valeur par défaut, sinon la migration ne fonctionnera pas
+    ])]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     #[ORM\PrePersist]
     public function prePersist()
     {
         $this->createAt = new \DateTimeImmutable();
         $this->slug = (new Slugify())->slugify($this->title);
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\preUpdate]
+    public function preUpdate()
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -153,6 +165,18 @@ class Annonce
     {
         $slugify = new Slugify();
         $this->slug = $slugify->slugify($slug);
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

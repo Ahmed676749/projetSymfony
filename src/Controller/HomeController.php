@@ -17,12 +17,6 @@ class HomeController extends AbstractController
             'current_menu' => 'app_home_index',
             'annonces' => $annonces
         ]);        
-
-        return $this->render('home/index.html.twig', [
-            'title' => 'Bienvenue sur Duckzon',
-            'content' => 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolorem quam cum corrupti modi cupiditate nostrum odit illo veniam, nulla neque officia expedita rerum, aliquid libero incidunt rem iusto reprehenderit maxime!',
-            'createdAt' => new \DateTime() 
-        ]);
     }
 }
 
