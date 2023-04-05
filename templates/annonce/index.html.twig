@@ -13,4 +13,13 @@
         {% endfor %}
         </div>
     </div>
+    <div class="container">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+    <div class="pagination">
+    {{ knp_pagination_render(annonces) }}
+    </div>
 {% endblock %}

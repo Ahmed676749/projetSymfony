@@ -11,6 +11,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use App\Repository\AnnonceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Knp\Component\Pager\PaginatorInterface;
 
 
 class AnnonceController extends AbstractController
@@ -25,49 +26,33 @@ class AnnonceController extends AbstractController
     // }
 
     #[Route('/annonce/new', methods: ['GET', 'POST'])]
-    public function new(ManagerRegistry $doctrine): Response
+    public function new(Request $request, EntityManagerInterface $em)
     {
         $annonce = new Annonce();
-        $annonce
-            ->setTitle('Ma collection de canard')
-            ->setDescription('Vends car plus d\'utilité')
-            ->setPrice(10)
-            ->setStatus(Annonce::STATUS_BAD)
-            ->setIsSold(false)
-     
-           
-        ;
-        
-        // On récupère l'EntityManager
-        $em = $doctrine->getManager();
-        // On « persiste » l'entité
-        $em->persist($annonce);
-        // On envoie tout ce qui a été persisté avant en base de données
-        $em->flush();
-
-        return new Response('annonce bien créée');
-
-        dump($annonce);
-        die;
-        
-        // dd($annonce); permet de faire la même chose que dump($annonce); die;
+    
+        $form = $this->createForm(AnnonceType::class, $annonce);
+        $form->handleRequest($request);
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($annonce);
+            $em->flush();
+            return $this->redirectToRoute('app_annonce_index');
+        }
+            
+        return $this->render('annonce/new.html.twig', [
+            'annonce' => $annonce,
+            'formView' => $form->createView()
+        ]);
     }
 
     #[Route('/annonce', methods: ['GET'])]
-    public function index(AnnonceRepository $annonceRepository): Response
+    public function index(AnnonceRepository $annonceRepository, PaginatorInterface $paginator, Request $request): Response
     {
-        // rechercher une annonce par ID
-        $annonce = $annonceRepository->find(1);
-        dump($annonce);
-        // recherche toutes les annonces
-        $annonce = $annonceRepository->findAll();
-        dump($annonce);
-        // recherche une annonce par champ
-        $annonce = $annonceRepository->findOneBy(['isSold' => false]);
-        dump($annonce);
-
-        $annonces = $annonceRepository->findAllNotSold();
-        dump($annonces);
+        $annonces = $paginator->paginate(
+            $annonceRepository->findAllNotSoldQuery(),
+            $request->query->getInt('page', 1), // on récupère le paramètre page en GET. Si le paramètre page n'existe pas dans l'url, la valeur par défaut sera 1
+            12 // on veut 12 annonces par page
+        );
 
         return $this->render('annonce/index.html.twig', [
             'current_menu' => 'app_annonce_index',
@@ -98,6 +83,7 @@ class AnnonceController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) { // si le formulaire est envoyé et s'il est valide
             $em->flush();
+            $this->addFlash('success', 'Annonce modifiée avec succès');
             return $this->redirectToRoute('app_annonce_index');
         }
 
@@ -105,6 +91,16 @@ class AnnonceController extends AbstractController
             'annonce' => $annonce,
             'formView' => $form->createView()
         ]);
+    }
+
+    #[Route('/annonce/{id}', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+        public function delete(Annonce $annonce, EntityManagerInterface $em, Request $request)
+    {
+        if ($this->isCsrfTokenValid('delete' . $annonce->getId(), $request->get('_token'))) {
+            $em->remove($annonce);
+            $em->flush();
+        }
+        return $this->redirectToRoute('app_annonce_index');
     }
 }
 

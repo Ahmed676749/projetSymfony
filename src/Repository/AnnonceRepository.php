@@ -6,6 +6,7 @@ use App\Entity\Annonce;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query;
 
 
 /**
@@ -73,6 +74,13 @@ class AnnonceRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('a')
             ->andWhere('a.isSold = false')
+        ;
+    }
+
+    public function findAllNotSoldQuery(): Query // knp_paginator aura besoin d'un objet de type Query pour fonctionner, c'est pour cela que nous avons besoin de cette fonction
+    {
+        return $this->findNotSoldQuery()
+            ->getQuery()
         ;
     }
 

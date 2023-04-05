@@ -6,8 +6,11 @@ use App\Repository\AnnonceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Cocur\Slugify\Slugify;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: AnnonceRepository::class), ORM\HasLifecycleCallbacks]
+#[UniqueEntity('slug')]
 class Annonce
 {
     // ces constantes nous permettront d'ajouter un status aux annonces
@@ -26,6 +29,10 @@ class Annonce
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        min: 40,
+        minMessage: "La description doit faire plus de {{ limit }} caractères",
+    )]
     private ?string $description = null;
 
     #[ORM\Column]
@@ -48,6 +55,16 @@ class Annonce
     ])]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Url(
+        protocols: ['https'],
+    )]
+    private ?string $imageUrl = null;
+
+    #[ORM\ManyToOne(inversedBy: 'annonces')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     #[ORM\PrePersist]
     public function prePersist()
     {
@@ -56,7 +73,7 @@ class Annonce
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    #[ORM\preUpdate]
+    #[ORM\PreUpdate]
     public function preUpdate()
     {
         $this->updatedAt = new \DateTimeImmutable();
@@ -113,7 +130,7 @@ class Annonce
         $allowedStatus = [
             self::STATUS_VERY_BAD,
             self::STATUS_BAD,
-            self::STATUS_VERY_GOOD,
+            self::STATUS_GOOD,
             self::STATUS_VERY_GOOD,
             self::STATUS_PERFECT
         ];
@@ -177,6 +194,30 @@ class Annonce
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getImageUrl(): ?string
+    {
+        return $this->imageUrl;
+    }
+
+    public function setImageUrl(?string $imageUrl): self
+    {
+        $this->imageUrl = $imageUrl;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }
