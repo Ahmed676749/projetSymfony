@@ -12,6 +12,8 @@ use App\Repository\AnnonceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Knp\Component\Pager\PaginatorInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 
 class AnnonceController extends AbstractController
@@ -26,6 +28,7 @@ class AnnonceController extends AbstractController
     // }
 
     #[Route('/annonce/new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
     public function new(Request $request, EntityManagerInterface $em)
     {
         $annonce = new Annonce();
@@ -69,6 +72,7 @@ class AnnonceController extends AbstractController
     }
 
     #[Route('/annonce/{id}/edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    #[Security("is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and annonce.getUser() == user)")]
     public function edit(Annonce $annonce, Request $request, EntityManagerInterface $em)
     {
 
@@ -94,6 +98,7 @@ class AnnonceController extends AbstractController
     }
 
     #[Route('/annonce/{id}', requirements: ['id' => '\d+'], methods: ['DELETE'])]
+    #[Security("is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and annonce.getUser() == user)")]
         public function delete(Annonce $annonce, EntityManagerInterface $em, Request $request)
     {
         if ($this->isCsrfTokenValid('delete' . $annonce->getId(), $request->get('_token'))) {
